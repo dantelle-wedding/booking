@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<!-- v2.1 -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dantelle Wedding Gallery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Cairo',sans-serif;background:#faf8f6;color:#1a1a1a;min-height:100vh;}
+.header{background:#fff;border-bottom:0.5px solid #e8e0d8;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.brand{font-size:18px;font-weight:600;color:#1a1a1a;white-space:nowrap;}
+.brand span{color:#b8906a;}
+.header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.nav-tabs{display:flex;gap:6px;}
+.nav-tab{padding:7px 16px;border:0.5px solid #e8e0d8;border-radius:8px;background:transparent;color:#888;cursor:pointer;font-size:13px;font-family:'Cairo',sans-serif;font-weight:500;transition:all .15s;}
+.nav-tab.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a;}
+.lang-btn{padding:6px 14px;border:0.5px solid #e8e0d8;border-radius:8px;background:transparent;color:#b8906a;cursor:pointer;font-size:13px;font-family:'Cairo',sans-serif;font-weight:600;transition:all .15s;white-space:nowrap;}
+.lang-btn:hover{background:#fdf5ee;}
+.main{max-width:560px;margin:0 auto;padding:2rem 1.5rem;}
+.page-title{font-size:22px;font-weight:600;margin-bottom:4px;}
+.page-sub{font-size:14px;color:#888;margin-bottom:2rem;}
+.card{background:#fff;border:0.5px solid #e8e0d8;border-radius:16px;padding:1.75rem;}
+.field{margin-bottom:1.2rem;}
+.field label{display:block;font-size:13px;color:#666;margin-bottom:6px;font-weight:500;}
+.field input{width:100%;padding:10px 14px;border:0.5px solid #ddd;border-radius:10px;background:#fff;color:#1a1a1a;font-size:14px;font-family:'Cairo',sans-serif;transition:border-color .15s;}
+.field input:focus{outline:none;border-color:#b8906a;}
+.date-label{font-size:13px;color:#666;font-weight:500;margin-bottom:8px;}
+.slots-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.slot{padding:9px 4px;text-align:center;border:0.5px solid #ddd;border-radius:10px;font-size:13px;cursor:pointer;color:#1a1a1a;background:#fff;font-family:'Cairo',sans-serif;transition:all .15s;}
+.slot:hover:not(.taken){border-color:#b8906a;color:#b8906a;}
+.slot.selected{border:1.5px solid #b8906a;color:#b8906a;background:#fdf5ee;}
+.slot.taken{background:#f5f5f5;color:#bbb;cursor:not-allowed;text-decoration:line-through;}
+.slots-hint{display:flex;gap:16px;margin-top:10px;}
+.hint-item{display:flex;align-items:center;gap:5px;font-size:12px;color:#aaa;}
+.hint-dot{width:8px;height:8px;border-radius:50%;}
+.submit-btn{width:100%;padding:12px;background:#1a1a1a;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;margin-top:1.5rem;font-family:'Cairo',sans-serif;transition:opacity .15s;}
+.submit-btn:hover{opacity:.85;}
+.submit-btn:disabled{background:#ccc;cursor:not-allowed;opacity:1;}
+.success{display:none;text-align:center;padding:2rem;border:0.5px solid #c8e6c9;background:#f1f8f1;border-radius:16px;margin-top:1rem;}
+.success i{font-size:40px;color:#4caf50;display:block;margin-bottom:12px;}
+.success h3{font-size:16px;font-weight:600;color:#2e7d32;margin-bottom:6px;}
+.success p{font-size:13px;color:#555;}
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(255,255,255,.7);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:12px;}
+.loading-overlay.show{display:flex;}
+.spinner{width:36px;height:36px;border:3px solid #e8e0d8;border-top-color:#b8906a;border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.error-msg{display:none;background:#ffebee;border:0.5px solid #ffcdd2;border-radius:10px;padding:.75rem 1rem;font-size:13px;color:#c62828;margin-top:.75rem;}
+.dashboard-main{max-width:760px;margin:0 auto;padding:2rem 1.5rem;}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.5rem;}
+.stat{background:#fff;border:0.5px solid #e8e0d8;border-radius:12px;padding:1rem;text-align:center;}
+.stat-num{font-size:26px;font-weight:600;color:#1a1a1a;}
+.stat-lbl{font-size:12px;color:#aaa;margin-top:3px;}
+.filter-row{display:flex;gap:8px;margin-bottom:1rem;}
+.filter-row input{flex:1;padding:9px 14px;border:0.5px solid #ddd;border-radius:10px;font-size:13px;font-family:'Cairo',sans-serif;background:#fff;color:#1a1a1a;}
+.filter-row input:focus{outline:none;border-color:#b8906a;}
+.refresh-btn{padding:9px 14px;border:0.5px solid #ddd;border-radius:10px;background:#fff;cursor:pointer;color:#666;font-size:14px;}
+.refresh-btn:hover{background:#faf8f6;}
+.bk-list{display:flex;flex-direction:column;gap:10px;}
+.bk-row{background:#fff;border:0.5px solid #e8e0d8;border-radius:14px;padding:1rem 1.25rem;display:flex;align-items:center;gap:12px;}
+.bk-av{width:42px;height:42px;border-radius:50%;background:#fdf5ee;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;color:#b8906a;flex-shrink:0;}
+.bk-info{flex:1;min-width:0;}
+.bk-name{font-size:14px;font-weight:600;color:#1a1a1a;}
+.bk-meta{font-size:12px;color:#aaa;margin-top:3px;}
+.bk-time{font-size:12px;padding:4px 12px;background:#fdf5ee;color:#b8906a;border-radius:8px;font-weight:500;white-space:nowrap;}
+.empty{text-align:center;padding:3rem;color:#aaa;font-size:14px;}
+.empty i{font-size:36px;display:block;margin-bottom:8px;color:#ddd;}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loader">
+  <div class="spinner"></div>
+  <span style="font-size:14px;color:#888;" id="loader-text">لحظة من فضلك...</span>
+</div>
+
+<div class="header">
+  <div class="brand">Dantelle <span>Wedding Gallery</span></div>
+  <div class="header-right">
+    <button class="lang-btn" onclick="toggleLang()" id="lang-btn">EN</button>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showPage('booking')" id="tab-booking"><i class="ti ti-calendar" aria-hidden="true"></i> <span id="t-booking">حجز موعد</span></button>
+      <button class="nav-tab" onclick="showPage('dashboard')" id="tab-dashboard"><i class="ti ti-layout-dashboard" aria-hidden="true"></i> <span id="t-dashboard">داشبورد</span></button>
+    </div>
+  </div>
+</div>
+
+<div id="page-booking">
+  <div class="main">
+    <div class="page-title" id="t-title">احجزي موعدك</div>
+    <div class="page-sub" id="t-sub">اختاري اليوم والوقت المناسب وهنتواصل معاكي</div>
+    <div class="card">
+      <div class="field">
+        <label id="t-name">الاسم</label>
+        <input type="text" id="f-name" placeholder="اسمك الكامل">
+      </div>
+      <div class="field">
+        <label id="t-phone">رقم التليفون</label>
+        <input type="tel" id="f-phone" placeholder="01XXXXXXXXX" style="direction:ltr;text-align:right;">
+      </div>
+      <div class="field">
+        <label id="t-day">اليوم</label>
+        <input type="date" id="f-date" onchange="loadSlots()">
+      </div>
+      <div class="field">
+        <div class="date-label" id="t-time">الوقت</div>
+        <div class="slots-grid" id="slots-grid">
+          <div style="color:#bbb;font-size:13px;grid-column:span 4;text-align:center;padding:14px;" id="slots-placeholder">اختاري يوم الأول</div>
+        </div>
+        <div class="slots-hint">
+          <div class="hint-item"><div class="hint-dot" style="background:#b8906a;"></div> <span id="t-available">متاح</span></div>
+          <div class="hint-item"><div class="hint-dot" style="background:#ddd;"></div> <span id="t-booked">محجوز</span></div>
+        </div>
+      </div>
+      <div class="error-msg" id="form-error"></div>
+      <button class="submit-btn" id="submit-btn" disabled onclick="submitBooking()" id="t-submit-btn">احجزي الآن</button>
+    </div>
+    <div class="success" id="success-box">
+      <i class="ti ti-circle-check"></i>
+      <h3 id="t-success-title">تم تأكيد حجزك!</h3>
+      <p id="success-text"></p>
+    </div>
+  </div>
+</div>
+
+<div id="page-dashboard" style="display:none;">
+  <div class="dashboard-main">
+    <div class="page-title" style="margin-bottom:.4rem;" id="t-dash-title">الحجوزات</div>
+    <div class="page-sub" id="t-dash-sub">كل الحجوزات المسجلة</div>
+    <div class="stats">
+      <div class="stat"><div class="stat-num" id="s-total">—</div><div class="stat-lbl" id="t-total">إجمالي</div></div>
+      <div class="stat"><div class="stat-num" id="s-today">—</div><div class="stat-lbl" id="t-today">اليوم</div></div>
+      <div class="stat"><div class="stat-num" id="s-week">—</div><div class="stat-lbl" id="t-week">هذا الأسبوع</div></div>
+    </div>
+    <div class="filter-row">
+      <input type="text" id="search" placeholder="ابحث باسم أو تليفون..." oninput="renderList()">
+      <input type="date" id="filter-date" onchange="renderList()">
+      <button class="refresh-btn" onclick="loadBookings()" title="تحديث"><i class="ti ti-refresh"></i></button>
+    </div>
+    <div class="bk-list" id="bk-list"></div>
+  </div>
+</div>
+
+<script>
+const FORM_URL   = 'https://docs.google.com/forms/d/e/1FAIpQLSfztfjmsE_99Luh5UXcqlcjEHi0UnTkV32BLVMNFagkaTPCsQ/formResponse';
+const ENTRY_NAME  = 'entry.1021757473';
+const ENTRY_PHONE = 'entry.671790440';
+const TIMES = ['12:00 م','12:30 م','1:00 م','1:30 م','2:00 م','2:30 م','3:00 م','3:30 م','4:00 م','4:30 م','5:00 م','5:30 م','6:00 م','6:30 م','7:00 م','7:30 م','8:00 م','8:30 م','9:00 م'];
+const TIMES_EN = ['12:00 PM','12:30 PM','1:00 PM','1:30 PM','2:00 PM','2:30 PM','3:00 PM','3:30 PM','4:00 PM','4:30 PM','5:00 PM','5:30 PM','6:00 PM','6:30 PM','7:00 PM','7:30 PM','8:00 PM','8:30 PM','9:00 PM'];
+
+const T = {
+  ar: {
+    booking:'حجز موعد', dashboard:'داشبورد', title:'احجزي موعدك',
+    sub:'اختاري اليوم والوقت المناسب وهنتواصل معاكي',
+    name:'الاسم', phone:'رقم التليفون', day:'اليوم', time:'الوقت',
+    available:'متاح', booked:'محجوز', submitBtn:'احجزي الآن',
+    successTitle:'تم تأكيد حجزك!', placeholder:'اختاري يوم الأول',
+    dashTitle:'الحجوزات', dashSub:'كل الحجوزات المسجلة',
+    total:'إجمالي', today:'اليوم', week:'هذا الأسبوع',
+    searchPlaceholder:'ابحث باسم أو تليفون...',
+    loader:'لحظة من فضلك...',
+    errName:'من فضلك ادخلي اسمك', errPhone:'من فضلك ادخلي رقم التليفون',
+    errSlot:'من فضلك اختاري اليوم والوقت',
+    successMsg:'موعدك', at:'الساعة',
+    passPrompt:'ادخل الباسورد:', passWrong:'الباسورد غلط!',
+    confirmDelete:'تأكيد الحذف؟', lang:'EN', dir:'rtl', htmlLang:'ar'
+  },
+  en: {
+    booking:'Book Appointment', dashboard:'Dashboard', title:'Book Your Appointment',
+    sub:'Choose your preferred date and time and we will get in touch',
+    name:'Full Name', phone:'Phone Number', day:'Date', time:'Time',
+    available:'Available', booked:'Booked', submitBtn:'Book Now',
+    successTitle:'Booking Confirmed!', placeholder:'Select a date first',
+    dashTitle:'Bookings', dashSub:'All registered bookings',
+    total:'Total', today:'Today', week:'This Week',
+    searchPlaceholder:'Search by name or phone...',
+    loader:'Please wait...',
+    errName:'Please enter your name', errPhone:'Please enter your phone number',
+    errSlot:'Please select a date and time',
+    successMsg:'Your appointment is on', at:'at',
+    passPrompt:'Enter password:', passWrong:'Wrong password!',
+    confirmDelete:'Confirm delete?', lang:'ع', dir:'ltr', htmlLang:'en'
+  }
+};
+
+let lang = 'ar';
+let allBookings = JSON.parse(localStorage.getItem('bridal_bookings') || '[]');
+let selectedSlot = null;
+
+document.getElementById('f-date').min = new Date().toISOString().split('T')[0];
+
+function t(key){ return T[lang][key]; }
+function showLoader(v){ document.getElementById('loader').classList.toggle('show',v); }
+function showError(msg){ const el=document.getElementById('form-error'); el.textContent=msg; el.style.display=msg?'block':'none'; }
+function saveLocal(){ localStorage.setItem('bridal_bookings', JSON.stringify(allBookings)); }
+
+function toggleLang(){
+  lang = lang==='ar' ? 'en' : 'ar';
+  applyLang();
+}
+
+function applyLang(){
+  document.documentElement.lang = t('htmlLang');
+  document.documentElement.dir  = t('dir');
+  document.getElementById('lang-btn').textContent    = t('lang');
+  document.getElementById('t-booking').textContent   = t('booking');
+  document.getElementById('t-dashboard').textContent = t('dashboard');
+  document.getElementById('t-title').textContent     = t('title');
+  document.getElementById('t-sub').textContent       = t('sub');
+  document.getElementById('t-name').textContent      = t('name');
+  document.getElementById('t-phone').textContent     = t('phone');
+  document.getElementById('t-day').textContent       = t('day');
+  document.getElementById('t-time').textContent      = t('time');
+  document.getElementById('t-available').textContent = t('available');
+  document.getElementById('t-booked').textContent    = t('booked');
+  document.getElementById('submit-btn').textContent  = t('submitBtn');
+  document.getElementById('t-success-title').textContent = t('successTitle');
+  document.getElementById('t-dash-title').textContent= t('dashTitle');
+  document.getElementById('t-dash-sub').textContent  = t('dashSub');
+  document.getElementById('t-total').textContent     = t('total');
+  document.getElementById('t-today').textContent     = t('today');
+  document.getElementById('t-week').textContent      = t('week');
+  document.getElementById('search').placeholder      = t('searchPlaceholder');
+  document.getElementById('loader-text').textContent = t('loader');
+  const ph = document.getElementById('slots-placeholder');
+  if(ph) ph.textContent = t('placeholder');
+  const date = document.getElementById('f-date').value;
+  if(date) loadSlots();
+}
+
+function formatDate(date){
+  const months={ar:['','يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],en:['','January','February','March','April','May','June','July','August','September','October','November','December']};
+  const [y,m,d]=date.split('-');
+  return lang==='ar' ? `${parseInt(d)} ${months.ar[parseInt(m)]}` : `${months.en[parseInt(m)]} ${parseInt(d)}`;
+}
+
+function loadSlots(){
+  const date = document.getElementById('f-date').value;
+  selectedSlot = null;
+  document.getElementById('submit-btn').disabled = true;
+  if(!date) return;
+  const taken = allBookings.filter(b=>b.date===date).map(b=>b.timeKey);
+  const times = lang==='ar' ? TIMES : TIMES_EN;
+  const grid = document.getElementById('slots-grid');
+  grid.innerHTML = TIMES.map((t,i) => {
+    const isTaken = taken.includes(t);
+    const label = lang==='ar' ? TIMES[i] : TIMES_EN[i];
+    return `<div class="slot${isTaken?' taken':''}" onclick="${isTaken?'':'selectSlot(this,\''+t+'\',\''+TIMES_EN[i]+'\')'}">${label}</div>`;
+  }).join('');
+}
+
+function selectSlot(el, timeKey, timeEn){
+  document.querySelectorAll('.slot').forEach(s=>s.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedSlot = {key: timeKey, en: timeEn, ar: timeKey};
+  document.getElementById('submit-btn').disabled = false;
+  showError('');
+}
+
+async function submitBooking(){
+  const name  = document.getElementById('f-name').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  const date  = document.getElementById('f-date').value;
+  if(!name)  { showError(t('errName')); return; }
+  if(!phone) { showError(t('errPhone')); return; }
+  if(!date||!selectedSlot){ showError(t('errSlot')); return; }
+  showLoader(true);
+  const body = new URLSearchParams();
+  body.append(ENTRY_NAME,  name);
+  body.append(ENTRY_PHONE, `${phone} | ${formatDate(date)} | ${selectedSlot.en}`);
+  try { await fetch(FORM_URL, { method:'POST', mode:'no-cors', body }); } catch(e){}
+  allBookings.push({ name, phone, date, timeKey: selectedSlot.key, timeEn: selectedSlot.en, id: Date.now() });
+  saveLocal();
+  const msg = lang==='ar'
+    ? `موعدك ${formatDate(date)} الساعة ${selectedSlot.key} 🌸`
+    : `Your appointment is on ${formatDate(date)} at ${selectedSlot.en} 🌸`;
+  document.getElementById('success-text').textContent = msg;
+  document.getElementById('success-box').style.display = 'block';
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-phone').value = '';
+  document.getElementById('f-date').value = '';
+  document.getElementById('slots-grid').innerHTML = `<div style="color:#bbb;font-size:13px;grid-column:span 4;text-align:center;padding:14px;">${t('placeholder')}</div>`;
+  document.getElementById('submit-btn').disabled = true;
+  selectedSlot = null;
+  showError('');
+  setTimeout(()=>{ document.getElementById('success-box').style.display='none'; }, 6000);
+  showLoader(false);
+}
+
+function loadBookings(){
+  allBookings = JSON.parse(localStorage.getItem('bridal_bookings') || '[]');
+  renderList();
+}
+
+function renderList(){
+  const search = document.getElementById('search').value.toLowerCase();
+  const fd     = document.getElementById('filter-date').value;
+  const today  = new Date().toISOString().split('T')[0];
+  const weekAgo= new Date(Date.now()-7*86400000).toISOString().split('T')[0];
+  document.getElementById('s-total').textContent = allBookings.length;
+  document.getElementById('s-today').textContent = allBookings.filter(b=>b.date===today).length;
+  document.getElementById('s-week').textContent  = allBookings.filter(b=>b.date>=weekAgo).length;
+  let filtered = allBookings;
+  if(search) filtered = filtered.filter(b=>(b.name||'').toLowerCase().includes(search)||(b.phone||'').includes(search));
+  if(fd)     filtered = filtered.filter(b=>b.date===fd);
+  const list = document.getElementById('bk-list');
+  if(!filtered.length){ list.innerHTML='<div class="empty"><i class="ti ti-calendar-off"></i><br>No bookings / لا توجد حجوزات</div>'; return; }
+  list.innerHTML = [...filtered].reverse().map(b => {
+    const initials = (b.name||'?').split(' ').map(w=>w[0]).slice(0,2).join('');
+    const timeLabel = b.timeEn || b.timeKey || '—';
+    return `<div class="bk-row">
+      <div class="bk-av">${initials}</div>
+      <div class="bk-info">
+        <div class="bk-name">${b.name||'—'}</div>
+        <div class="bk-meta">
+          <i class="ti ti-phone" style="font-size:12px;" aria-hidden="true"></i> ${b.phone||'—'}
+          &nbsp;·&nbsp;
+          <i class="ti ti-calendar" style="font-size:12px;" aria-hidden="true"></i> ${b.date ? formatDate(b.date) : '—'}
+          &nbsp;·&nbsp;
+          <i class="ti ti-clock" style="font-size:12px;" aria-hidden="true"></i> ${timeLabel}
+        </div>
+      </div>
+      <span class="bk-time">${timeLabel}</span>
+      <button onclick="deleteBooking(${b.id})" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:16px;padding:6px;border-radius:8px;" onmouseover="this.style.color='#e53935'" onmouseout="this.style.color='#ccc'">
+        <i class="ti ti-trash" aria-hidden="true"></i>
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function deleteBooking(id){
+  if(!confirm(t('confirmDelete'))) return;
+  allBookings = allBookings.filter(b=>b.id!==id);
+  saveLocal();
+  renderList();
+  const date = document.getElementById('f-date').value;
+  if(date) loadSlots();
+}
+
+function showPage(p){
+  if(p==='dashboard'){
+    const pass = prompt(t('passPrompt'));
+    if(pass !== 'AYA2026dw'){ alert(t('passWrong')); return; }
+  }
+  document.getElementById('page-booking').style.display   = p==='booking'   ? '' : 'none';
+  document.getElementById('page-dashboard').style.display = p==='dashboard' ? '' : 'none';
+  document.querySelectorAll('.nav-tab').forEach((el,i)=>el.classList.toggle('active',['booking','dashboard'][i]===p));
+  if(p==='dashboard') loadBookings();
+}
+</script>
+</body>
+</html>
