@@ -148,6 +148,7 @@ body{font-family:'Cairo',sans-serif;background:#faf8f6;color:#1a1a1a;min-height:
 const FORM_URL   = 'https://docs.google.com/forms/d/e/1FAIpQLSfztfjmsE_99Luh5UXcqlcjEHi0UnTkV32BLVMNFagkaTPCsQ/formResponse';
 const ENTRY_NAME  = 'entry.1021757473';
 const ENTRY_PHONE = 'entry.671790440';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxN4ewq1fJNzuvbd9qBkqE6Dah1HWn7TyoG2Q57afLsXYG6mzKbcLDeUw1lpT6Sre6NtQ/exec';
 const TIMES = ['12:00 م','12:30 م','1:00 م','1:30 م','2:00 م','2:30 م','3:00 م','3:30 م','4:00 م','4:30 م','5:00 م','5:30 م','6:00 م','6:30 م','7:00 م','7:30 م','8:00 م','8:30 م','9:00 م'];
 const TIMES_EN = ['12:00 PM','12:30 PM','1:00 PM','1:30 PM','2:00 PM','2:30 PM','3:00 PM','3:30 PM','4:00 PM','4:30 PM','5:00 PM','5:30 PM','6:00 PM','6:30 PM','7:00 PM','7:30 PM','8:00 PM','8:30 PM','9:00 PM'];
 
@@ -187,15 +188,23 @@ const T = {
 };
 
 let lang = 'ar';
-let allBookings = JSON.parse(localStorage.getItem('bridal_bookings') || '[]');
+let allBookings = [];
 let selectedSlot = null;
 
 document.getElementById('f-date').min = new Date().toISOString().split('T')[0];
 
+async function fetchBookings(){
+  try {
+    const res = await fetch(API_URL);
+    allBookings = await res.json();
+  } catch(e) {
+    console.error('Failed to load bookings', e);
+  }
+}
+
 function t(key){ return T[lang][key]; }
 function showLoader(v){ document.getElementById('loader').classList.toggle('show',v); }
 function showError(msg){ const el=document.getElementById('form-error'); el.textContent=msg; el.style.display=msg?'block':'none'; }
-function saveLocal(){ localStorage.setItem('bridal_bookings', JSON.stringify(allBookings)); }
 
 function toggleLang(){
   lang = lang==='ar' ? 'en' : 'ar';
@@ -237,11 +246,14 @@ function formatDate(date){
   return lang==='ar' ? `${parseInt(d)} ${months.ar[parseInt(m)]}` : `${months.en[parseInt(m)]} ${parseInt(d)}`;
 }
 
-function loadSlots(){
+async function loadSlots(){
   const date = document.getElementById('f-date').value;
   selectedSlot = null;
   document.getElementById('submit-btn').disabled = true;
   if(!date) return;
+  showLoader(true);
+  await fetchBookings();
+  showLoader(false);
   const taken = allBookings.filter(b=>b.date===date).map(b=>b.timeKey);
   const times = lang==='ar' ? TIMES : TIMES_EN;
   const grid = document.getElementById('slots-grid');
@@ -268,12 +280,36 @@ async function submitBooking(){
   if(!phone) { showError(t('errPhone')); return; }
   if(!date||!selectedSlot){ showError(t('errSlot')); return; }
   showLoader(true);
+
+  // re-check availability right before saving to avoid two people grabbing the same slot
+  await fetchBookings();
+  const stillFree = !allBookings.some(b=>b.date===date && b.timeKey===selectedSlot.key);
+  if(!stillFree){
+    showLoader(false);
+    showError(t('errSlot'));
+    loadSlots();
+    return;
+  }
+
   const body = new URLSearchParams();
   body.append(ENTRY_NAME,  name);
   body.append(ENTRY_PHONE, `${phone} | ${formatDate(date)} | ${selectedSlot.en}`);
   try { await fetch(FORM_URL, { method:'POST', mode:'no-cors', body }); } catch(e){}
-  allBookings.push({ name, phone, date, timeKey: selectedSlot.key, timeEn: selectedSlot.en, id: Date.now() });
-  saveLocal();
+
+  try {
+    const apiBody = new URLSearchParams();
+    apiBody.append('name', name);
+    apiBody.append('phone', phone);
+    apiBody.append('date', date);
+    apiBody.append('timeKey', selectedSlot.key);
+    apiBody.append('timeEn', selectedSlot.en);
+    await fetch(API_URL, { method:'POST', body: apiBody });
+  } catch(e){
+    showLoader(false);
+    showError(t('errSlot'));
+    return;
+  }
+
   const msg = lang==='ar'
     ? `موعدك ${formatDate(date)} الساعة ${selectedSlot.key} 🌸`
     : `Your appointment is on ${formatDate(date)} at ${selectedSlot.en} 🌸`;
@@ -290,8 +326,10 @@ async function submitBooking(){
   showLoader(false);
 }
 
-function loadBookings(){
-  allBookings = JSON.parse(localStorage.getItem('bridal_bookings') || '[]');
+async function loadBookings(){
+  showLoader(true);
+  await fetchBookings();
+  showLoader(false);
   renderList();
 }
 
@@ -331,10 +369,17 @@ function renderList(){
   }).join('');
 }
 
-function deleteBooking(id){
+async function deleteBooking(id){
   if(!confirm(t('confirmDelete'))) return;
-  allBookings = allBookings.filter(b=>b.id!==id);
-  saveLocal();
+  showLoader(true);
+  try {
+    const body = new URLSearchParams();
+    body.append('action', 'delete');
+    body.append('id', id);
+    await fetch(API_URL, { method:'POST', body });
+  } catch(e){}
+  await fetchBookings();
+  showLoader(false);
   renderList();
   const date = document.getElementById('f-date').value;
   if(date) loadSlots();
